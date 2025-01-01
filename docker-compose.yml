@@ -1,0 +1,40 @@
+name: vidly-app
+
+services:
+  frontend:
+    depends_on: 
+      - backend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: vidly_web:1.0
+    ports:
+      - 80:80
+
+  backend:
+    depends_on:
+      - mongodb
+    build: ./backend
+    image: nodejs-backend
+    container_name: nodejs-backend
+    env_file: ".env"
+    ports:
+      - 3200:3000
+
+  mongodb:
+    image: bitnami/mongodb:8.0
+    container_name: mongodb
+    environment:
+      MONGODB_ROOT_USERNAME: ${DB_USER:?error}
+      MONGODB_ROOT_PASSWORD: ${DB_PASS:?error}
+      MONGODB_REPLICA_SET_MODE: primary
+      MONGODB_REPLICA_SET_NAME: rs0
+      MONGODB_REPLICA_SET_KEY: ${DB_KEY:?error}
+      MONGODB_ADVERTISED_HOSTNAME: mongodb
+    volumes:
+      - mongodb_data:/bitnami/mongodb
+    ports:
+      - ${DB_PORT:?error}:27017
+
+volumes:
+  mongodb_data:
